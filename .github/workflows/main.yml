@@ -23,6 +23,11 @@ jobs:
           cache: gradle
 
       - name: Build with Gradle
+        run: chmod +x ./android/gradlew
+
+      - name: Build Debug APK
+        # This tells GitHub to "cd android" before running the command
+        working-directory: ./android
         run: ./gradlew assembleDebug
 
       - name: Upload APK
