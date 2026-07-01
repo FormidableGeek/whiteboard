@@ -218,7 +218,6 @@ export default function App() {
         >
           🗑️
         </button>
-
         {/* Download as image */}
         <button
           title="Download as PNG"
