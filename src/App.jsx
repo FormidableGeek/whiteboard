@@ -1,5 +1,5 @@
 import './index.css'
-import { Eraser, Pencil, Palette, Minus, Plus } from 'lucide-react'
+import { Eraser, Pencil, Palette, Minus, Plus, Download } from 'lucide-react'
 import { useRef, useState, useEffect, useCallback } from 'react'
 
 export default function App() {
@@ -67,6 +67,22 @@ export default function App() {
   const clearCanvas = () => {
     const el = canvas.current;
     el.getContext('2d').clearRect(0, 0, el.width, el.height);
+  };
+
+  const downloadCanvas = () => {
+    const el = canvas.current;
+    // Create a temp canvas with white background so transparent areas export cleanly
+    const tmp = document.createElement('canvas');
+    tmp.width = el.width;
+    tmp.height = el.height;
+    const ctx = tmp.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, tmp.width, tmp.height);
+    ctx.drawImage(el, 0, 0);
+    const link = document.createElement('a');
+    link.download = `whiteboard-${Date.now()}.png`;
+    link.href = tmp.toDataURL('image/png');
+    link.click();
   };
 
   return (
@@ -201,6 +217,25 @@ export default function App() {
           onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.border = '2px solid transparent'; }}
         >
           🗑️
+        </button>
+
+        {/* Download as image */}
+        <button
+          title="Download as PNG"
+          onClick={downloadCanvas}
+          style={{
+            background: 'transparent',
+            border: '2px solid transparent',
+            borderRadius: '8px',
+            padding: '6px',
+            cursor: 'pointer',
+            color: '#374151',
+            transition: 'all 0.2s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#ecfdf5'; e.currentTarget.style.border = '2px solid #10b981'; e.currentTarget.style.color = '#10b981'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.border = '2px solid transparent'; e.currentTarget.style.color = '#374151'; }}
+        >
+          <Download size={22} />
         </button>
 
       </div>
