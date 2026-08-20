@@ -1,7 +1,9 @@
 import './index.css'
 import { Eraser, Pencil, Palette, Minus, Plus, Download } from 'lucide-react'
 import { useRef, useState, useEffect, useCallback } from 'react'
-
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 export default function App() {
   const canvas = useRef(null);
   const isDrawing = useRef(false);
@@ -69,7 +71,7 @@ export default function App() {
     el.getContext('2d').clearRect(0, 0, el.width, el.height);
   };
 
-  const downloadCanvas = () => {
+  const downloadCanvas = async () => {
     const el = canvas.current;
     // Create a temp canvas with white background so transparent areas export cleanly
     const tmp = document.createElement('canvas');
@@ -79,10 +81,34 @@ export default function App() {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, tmp.width, tmp.height);
     ctx.drawImage(el, 0, 0);
-    const link = document.createElement('a');
-    link.download = `whiteboard-${Date.now()}.png`;
-    link.href = tmp.toDataURL('image/png');
-    link.click();
+    
+    const dataUrl = tmp.toDataURL('image/png');
+    const fileName = `whiteboard-${Date.now()}.png`;
+
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const savedFile = await Filesystem.writeFile({
+          path: fileName,
+          data: dataUrl,
+          directory: Directory.Cache
+        });
+        
+        await Share.share({
+          title: 'Save Whiteboard Image',
+          text: 'Here is your whiteboard image',
+          url: savedFile.uri,
+          dialogTitle: 'Save or Share Image'
+        });
+      } catch (err) {
+        console.error('Error sharing image', err);
+        alert('Failed to save image.');
+      }
+    } else {
+      const link = document.createElement('a');
+      link.download = fileName;
+      link.href = dataUrl;
+      link.click();
+    }
   };
 
   return (
